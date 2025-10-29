@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Attendance Statistics</h1>
+    <a href="{{ url_for('attendance') }}" class="btn btn-primary">
+        <i class="fas fa-arrow-left"></i> Back to Attendance
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Overall Attendance</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="overallAttendanceChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Attendance Trends</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="attendanceTrendChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Attendance Summary</h5>
+            </div>
+            <div class="card-body">
+                <p>Attendance statistics and analytics will be displayed here.</p>
+                <p>Features coming soon: Monthly trends, subject-wise analysis, and student performance reports.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Sample charts for attendance statistics
+    document.addEventListener('DOMContentLoaded', function () {
+        // Overall attendance chart
+        const overallCtx = document.getElementById('overallAttendanceChart');
+        new Chart(overallCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Present', 'Absent', 'Late'],
+                datasets: [{
+                    data: [75, 15, 10],
+                    backgroundColor: ['#28a745', '#dc3545', '#ffc107']
+                }]
+            }
+        });
+
+        // Attendance trend chart
+        const trendCtx = document.getElementById('attendanceTrendChart');
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+                datasets: [{
+                    label: 'Attendance Rate %',
+                    data: [85, 78, 92, 88, 95],
+                    borderColor: '#4e73df',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 50,
+                        max: 100
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

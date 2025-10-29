@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Attendance Management</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('attendance_records') }}" class="btn btn-secondary me-2">
+            <i class="fas fa-history"></i> View Records
+        </a>
+        <a href="{{ url_for('attendance_stats') }}" class="btn btn-info">
+            <i class="fas fa-chart-bar"></i> Statistics
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Mark Attendance</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Year</label>
+                            <select class="form-control" name="year" id="yearSelect" required>
+                                <option value="">Select Year</option>
+                                <option value="SE">Second Year (SE)</option>
+                                <option value="TE">Third Year (TE)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Subject</label>
+                            <select class="form-control" name="subject" id="subjectSelect" required>
+                                <option value="">Select Subject</option>
+                                <option value="Software Engineering">Software Engineering</option>
+                                <option value="Data Structures">Data Structures</option>
+                                <option value="Database Systems">Database Systems</option>
+                                <option value="Computer Networks">Computer Networks</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Date</label>
+                            <input type="date" class="form-control" name="date" value="{{ today }}" required>
+                        </div>
+                    </div>
+
+                    <div id="studentList" class="mt-4">
+                        <div class="alert alert-info">
+                            Please select Year to load students
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success mt-3">
+                        <i class="fas fa-save"></i> Save Attendance
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Today's Summary</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="attendanceChart" width="300" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('yearSelect').addEventListener('change', function () {
+        const year = this.value;
+
+        if (year) {
+            // In a real application, you would fetch students from the server
+            // For now, we'll use a simple approach
+            const studentList = document.getElementById('studentList');
+            studentList.innerHTML = '<h6>Students:</h6>';
+
+            // Sample students - in real app, fetch from /api/students?year=SE
+            const students = year === 'SE' ?
+                ['Alice Johnson', 'Bob Smith', 'Carol Davis', 'David Wilson', 'Eva Brown'] :
+                ['Ivy Chen', 'Jack Anderson', 'Karen White', 'Leo Martin', 'Mia Garcia'];
+
+            students.forEach(student => {
+                studentList.innerHTML += `
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" name="status_${student}" value="Present" checked>
+                    <label class="form-check-label">${student}</label>
+                </div>
+            `;
+            });
+        }
+    });
+
+    // Initialize chart
+    const ctx = document.getElementById('attendanceChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Present', 'Absent'],
+            datasets: [{
+                data: [8, 0],
+                backgroundColor: ['#28a745', '#dc3545']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+</script>
+{% endblock %}

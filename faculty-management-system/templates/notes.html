@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Notes Management</h1>
+</div>
+
+<div class="row">
+    <!-- Left column: Upload form and stats -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Upload New Notes</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label">Notes Title</label>
+                        <input type="text" class="form-control" name="title"
+                            placeholder="e.g., Data Structures Lecture 1" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Year</label>
+                        <select class="form-control" name="year" required>
+                            <option value="SE">Second Year (SE)</option>
+                            <option value="TE">Third Year (TE)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Subject</label>
+                        <select class="form-control" name="subject" required>
+                            <option value="Software Engineering">Software Engineering</option>
+                            <option value="Data Structures">Data Structures</option>
+                            <option value="Database Systems">Database Systems</option>
+                            <option value="Computer Networks">Computer Networks</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="3"
+                            placeholder="Brief description of the notes..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Notes File</label>
+                        <input type="file" class="form-control" name="file" accept=".pdf,.doc,.docx,.txt,.ppt,.pptx"
+                            required />
+                        <small class="text-muted">
+                            Allowed formats: PDF, DOC, DOCX, TXT, PPT, PPTX (Max: 16 MB)
+                        </small>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-upload"></i> Upload Notes
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6>Notes Statistics</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4>{{ notes|length }}</h4>
+                        <small class="text-muted">Total Notes</small>
+                    </div>
+                    <div class="col-6">
+                        <h4>{{ (notes|selectattr('year','equalto','SE')|list)|length }}</h4>
+                        <small class="text-muted">SE Notes</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right column: Table and chart -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Uploaded Notes</h5>
+            </div>
+            <div class="card-body">
+                {% if notes %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Year</th>
+                                <th>Subject</th>
+                                <th>Description</th>
+                                <th>Upload Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for note in notes %}
+                            <tr>
+                                <td>
+                                    <strong>{{ note.title }}</strong><br />
+                                    {% if note.description %}
+                                    <small class="text-muted">
+                                        {{ note.description[:50] }}{% if note.description|length > 50 %}...{% endif %}
+                                    </small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'primary' if note.year == 'SE' else 'warning' }}">
+                                        {{ note.year }}
+                                    </span>
+                                </td>
+                                <td>{{ note.subject }}</td>
+                                <td>{{ note.description or 'No description' }}</td>
+                                <td>{{ note.upload_date }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('download_file', filename=note.filename) }}"
+                                            class="btn btn-primary" title="Download">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                        <a href="{{ url_for('delete_note', note_id=note.id) }}" class="btn btn-danger"
+                                            onclick="return confirm('Are you sure you want to delete this note?')"
+                                            title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-sticky-note fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No Notes Uploaded Yet</h5>
+                    <p class="text-muted">Upload your first set of notes using the form on the left.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Notes by Subject -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6>Notes Distribution by Subject</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="notesChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const notesBySubject = {};
+        {% for note in notes %}
+        const subject = "{{ note.subject }}";
+        notesBySubject[subject] = (notesBySubject[subject] || 0) + 1;
+        {% endfor %}
+
+        const ctx = document.getElementById("notesChart").getContext("2d");
+        if (Object.keys(notesBySubject).length > 0) {
+            new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: Object.keys(notesBySubject),
+                    datasets: [{
+                        label: "Number of Notes",
+                        data: Object.values(notesBySubject),
+                        backgroundColor: [
+                            "#4e73df", "#1cc88a", "#36b9cc", "#f6c23e",
+                            "#e74a3b", "#858796", "#5a5c69"
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
+        } else {
+            document.getElementById("notesChart").innerHTML =
+                '<p class="text-center text-muted">No data available for chart</p>';
+        }
+    });
+</script>
+{% endblock %}

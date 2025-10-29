@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Attendance Records</h1>
+    <a href="{{ url_for('attendance') }}" class="btn btn-primary">
+        <i class="fas fa-arrow-left"></i> Back to Attendance
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5>All Attendance Records</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Year</th>
+                        <th>Subject</th>
+                        <th>Student</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        <td>{{ record.date }}</td>
+                        <td>{{ record.year }}</td>
+                        <td>{{ record.subject }}</td>
+                        <td>{{ record.student_name }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if record.status == 'Present' else 'danger' }}">
+                                {{ record.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center">No attendance records found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,524 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2 text-white">
+        <i class="fas fa-chart-pie me-2"></i>
+        Executive Dashboard
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button class="btn btn-luxury btn-sm me-2">
+            <i class="fas fa-download me-1"></i>Export
+        </button>
+        <button class="btn btn-luxury-secondary btn-sm" onclick="location.reload()">
+            <i class="fas fa-sync me-1"></i>Refresh
+        </button>
+    </div>
+</div>
+
+<!-- Stats Overview - More Compact -->
+<div class="row mb-3">
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card primary">
+            <div class="d-flex align-items-center">
+                <div class="icon-wrapper me-3">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <h4 class="text-white mb-0">{{ today_lectures }}</h4>
+                    <small class="text-muted">Today's Lectures</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card success">
+            <div class="d-flex align-items-center">
+                <div class="icon-wrapper me-3">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <h4 class="text-white mb-0">{{ attendance_percentage }}%</h4>
+                    <small class="text-muted">Attendance Rate</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card info">
+            <div class="d-flex align-items-center">
+                <div class="icon-wrapper me-3">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <h4 class="text-white mb-0">{{ assignments_count }}</h4>
+                    <small class="text-muted">Assignments</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card warning">
+            <div class="d-flex align-items-center">
+                <div class="icon-wrapper me-3">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <h4 class="text-white mb-0">{{ total_students }}</h4>
+                    <small class="text-muted">Total Students</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions - More Compact -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="luxury-card p-3">
+            <h6 class="text-white mb-3">
+                <i class="fas fa-bolt me-2 text-warning"></i>
+                Quick Actions
+            </h6>
+            <div class="row g-2">
+                <div class="col-sm-6 col-md-3">
+                    <a href="{{ url_for('attendance') }}" class="btn btn-luxury w-100 py-2">
+                        <i class="fas fa-clipboard-check me-1"></i>
+                        Attendance
+                    </a>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <a href="{{ url_for('assignments') }}" class="btn btn-luxury-secondary w-100 py-2">
+                        <i class="fas fa-tasks me-1"></i>
+                        Assignments
+                    </a>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <a href="{{ url_for('notes') }}" class="btn btn-luxury-accent w-100 py-2">
+                        <i class="fas fa-sticky-note me-1"></i>
+                        Notes
+                    </a>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <a href="{{ url_for('students') }}" class="btn btn-luxury w-100 py-2"
+                        style="background: linear-gradient(135deg, #ec4899 0%, #d946ef 100%);">
+                        <i class="fas fa-users me-1"></i>
+                        Students
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- RECENT ACTIVITY - NOW IN THE MAIN PROMINENT POSITION -->
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="luxury-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="text-white mb-0">
+                    <i class="fas fa-bell me-2 text-info"></i>
+                    Recent Activity & Notifications
+                </h5>
+                <span class="badge badge-luxury badge-primary">{{ upcoming_events|length }} Events</span>
+            </div>
+
+            {% if upcoming_events %}
+            <div class="activity-feed">
+                {% for event in upcoming_events %}
+                <div class="activity-item d-flex align-items-center p-3 mb-2 luxury-card">
+                    <div class="activity-icon me-3">
+                        <i
+                            class="fas fa-{{ 'chalkboard-teacher' if event.type == 'lecture' else 'users' }} text-primary"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="text-white mb-1">{{ event.title }}</h6>
+                        <div class="d-flex flex-wrap">
+                            <small class="text-muted me-3">
+                                <i class="fas fa-calendar me-1"></i>{{ event.date }}
+                            </small>
+                            <small class="text-muted me-3">
+                                <i class="fas fa-clock me-1"></i>{{ event.time }}
+                            </small>
+                            {% if event.description %}
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>{{ event.description }}
+                            </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <span
+                        class="badge badge-luxury {{ 'badge-primary' if event.type == 'lecture' else 'badge-warning' }}">
+                        {{ event.type|title }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No Recent Activities</h5>
+                <p class="text-muted">All caught up! No upcoming events or notifications.</p>
+                <a href="{{ url_for('calendar') }}" class="btn btn-luxury btn-sm">
+                    <i class="fas fa-plus me-1"></i>Add Event
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Sidebar - Progress Summary -->
+    <div class="col-lg-4">
+        <!-- Progress Summary -->
+        <div class="luxury-card p-4 mb-3">
+            <h6 class="text-white mb-3">
+                <i class="fas fa-tachometer-alt me-2 text-warning"></i>
+                Progress Summary
+            </h6>
+            <div class="progress-item mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <small class="text-muted">Course Completion</small>
+                    <small class="text-muted">{{ syllabus_percentage }}%</small>
+                </div>
+                <div class="progress progress-luxury">
+                    <div class="progress-bar-luxury" style="width: {{ syllabus_percentage }}%"></div>
+                </div>
+            </div>
+            <div class="progress-item mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <small class="text-muted">Student Engagement</small>
+                    <small class="text-muted">{{ attendance_percentage }}%</small>
+                </div>
+                <div class="progress progress-luxury">
+                    <div class="progress-bar-luxury" style="width: {{ attendance_percentage }}%"></div>
+                </div>
+            </div>
+            <div class="progress-item">
+                <div class="d-flex justify-content-between mb-1">
+                    <small class="text-muted">Assignment Submission</small>
+                    <small class="text-muted">
+                        {% set assignment_rate = (assignments_count / 10 * 100) if assignments_count <= 10 else 100 %}
+                            {{ assignment_rate|int }}% </small>
+                </div>
+                <div class="progress progress-luxury">
+                    <div class="progress-bar-luxury" style="width: {{ assignment_rate }}%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="luxury-card p-4">
+            <h6 class="text-white mb-3">
+                <i class="fas fa-chart-bar me-2 text-info"></i>
+                Quick Stats
+            </h6>
+            <div class="stats-grid">
+                <div class="stat-mini text-center py-2">
+                    <div class="text-primary fw-bold">{{ today_lectures }}</div>
+                    <small class="text-muted">Today</small>
+                </div>
+                <div class="stat-mini text-center py-2">
+                    <div class="text-success fw-bold">{{ assignments_count }}</div>
+                    <small class="text-muted">Assignments</small>
+                </div>
+                <div class="stat-mini text-center py-2">
+                    <div class="text-warning fw-bold">{{ total_students }}</div>
+                    <small class="text-muted">Students</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CHARTS - NOW IN THE BOTTOM SECTION WHERE RECENT ACTIVITY WAS -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="luxury-card p-4">
+            <h5 class="text-white mb-3">
+                <i class="fas fa-chart-pie me-2 text-primary"></i>
+                Attendance Overview
+            </h5>
+            <div class="chart-container-lg">
+                <canvas id="attendanceChart"></canvas>
+            </div>
+            <div class="mt-3 text-center">
+                <small class="text-muted">Overall attendance distribution across all classes</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="luxury-card p-4">
+            <h5 class="text-white mb-3">
+                <i class="fas fa-chart-line me-2 text-success"></i>
+                Syllabus Progress
+            </h5>
+            <div class="chart-container-lg">
+                <canvas id="syllabusChart"></canvas>
+            </div>
+            <div class="mt-3 text-center">
+                <small class="text-muted">Completion progress across all subjects</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Info Cards -->
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <div class="luxury-card p-3 text-center">
+            <div class="icon-wrapper mx-auto mb-2"
+                style="width: 50px; height: 50px; background: rgba(99, 102, 241, 0.2);">
+                <i class="fas fa-book-open text-primary"></i>
+            </div>
+            <h6 class="text-white">Course Materials</h6>
+            <small class="text-muted">All teaching resources organized</small>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="luxury-card p-3 text-center">
+            <div class="icon-wrapper mx-auto mb-2"
+                style="width: 50px; height: 50px; background: rgba(16, 185, 129, 0.2);">
+                <i class="fas fa-chart-bar text-success"></i>
+            </div>
+            <h6 class="text-white">Performance Analytics</h6>
+            <small class="text-muted">Detailed student insights</small>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="luxury-card p-3 text-center">
+            <div class="icon-wrapper mx-auto mb-2"
+                style="width: 50px; height: 50px; background: rgba(245, 158, 11, 0.2);">
+                <i class="fas fa-calendar-check text-warning"></i>
+            </div>
+            <h6 class="text-white">Schedule Management</h6>
+            <small class="text-muted">Optimized timetable</small>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Attendance Chart - Larger size for bottom section
+        fetch('/get_attendance_chart_data')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('attendanceChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Present', 'Absent'],
+                        datasets: [{
+                            data: [data.present, data.absent],
+                            backgroundColor: ['#10b981', '#ef4444'],
+                            borderWidth: 0,
+                            borderRadius: 8,
+                            borderColor: 'transparent'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        cutout: '65%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: '#a0a0c0',
+                                    font: {
+                                        size: 12
+                                    },
+                                    padding: 20,
+                                    usePointStyle: true
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rg(26, 27, 46, 0.9)',
+                                titleColor: '#ffffff',
+                                bodyColor: '#a0a0c0',
+                                borderColor: '#6366f1',
+                                borderWidth: 1
+                            }
+                        }
+                    }
+                });
+            });
+
+        // Syllabus Progress Chart - Larger size for bottom section
+        fetch('/syllabus_progress')
+            .then(response => response.json())
+            .then(data => {
+                const syllabusCtx = document.getElementById('syllabusChart').getContext('2d');
+                new Chart(syllabusCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Completed', 'Remaining'],
+                        datasets: [{
+                            data: [data.completed, data.total - data.completed],
+                            backgroundColor: ['#8b5cf6', '#374151'],
+                            borderRadius: 8,
+                            borderWidth: 0,
+                            borderSkipped: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(26, 27, 46, 0.9)',
+                                titleColor: '#ffffff',
+                                bodyColor: '#a0a0c0',
+                                borderColor: '#6366f1',
+                                borderWidth: 1
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(255,255,255,0.1)',
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    color: '#a0a0c0',
+                                    font: {
+                                        size: 11
+                                    }
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false,
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    color: '#a0a0c0',
+                                    font: {
+                                        size: 12,
+                                        weight: '600'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+    });
+</script>
+
+<style>
+    /* Larger chart containers for bottom section */
+    .chart-container-lg {
+        height: 250px;
+        position: relative;
+    }
+
+    /* Enhanced activity feed styling */
+    .activity-feed {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .activity-item {
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+    }
+
+    .activity-item:hover {
+        background: var(--bg-card-hover);
+        border-color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: rgba(99, 102, 241, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1em;
+    }
+
+    /* Progress items */
+    .progress-item {
+        padding: 0 4px;
+    }
+
+    /* Stats grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    .stat-mini {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        padding: 12px 8px;
+    }
+
+    .stat-mini:hover {
+        transform: translateY(-3px);
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Badge sizing */
+    .badge-sm {
+        font-size: 0.7em;
+        padding: 4px 10px;
+    }
+
+    /* Ensure cards have consistent heights */
+    .h-100 {
+        height: 100% !important;
+    }
+
+    /* Custom scrollbar for activity feed */
+    .activity-feed::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .activity-feed::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 3px;
+    }
+
+    .activity-feed::-webkit-scrollbar-thumb {
+        background: var(--gradient-primary);
+        border-radius: 3px;
+    }
+
+    .activity-feed::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-dark);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .chart-container-lg {
+            height: 220px;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .activity-feed {
+            max-height: 300px;
+        }
+    }
+</style>
+{% endblock %}
